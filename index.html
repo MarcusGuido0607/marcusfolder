@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartLib — NU University Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="db.js"></script>
+  <style>
+    /* ── Landing gate styles ── */
+    body { margin: 0; min-height: 100vh; background: var(--navy-dark); display: flex; flex-direction: column; }
+
+    .gate-layout {
+      display: flex; min-height: 100vh;
+    }
+
+    /* Left panel – hero */
+    .gate-hero {
+      flex: 1; background: linear-gradient(145deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
+      padding: 60px 56px; display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .gate-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 80%, rgba(232,168,32,.15) 0%, transparent 60%),
+                  url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .gate-hero .brand {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 56px; position: relative;
+    }
+    .gate-hero .brand img { width: 44px; background: white; border-radius: 10px; padding: 5px; }
+    .gate-hero .brand span { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 800; color: white; }
+    .gate-hero .brand span em { color: var(--gold); font-style: normal; }
+
+    .hero-headline { position: relative; }
+    .hero-headline h1 {
+      font-family: 'Sora', sans-serif; font-size: 3rem; font-weight: 800;
+      color: white; line-height: 1.15; margin-bottom: 20px;
+    }
+    .hero-headline h1 em { color: var(--gold); font-style: normal; display: block; }
+    .hero-headline p { font-size: 1.05rem; color: rgba(255,255,255,.7); line-height: 1.7; max-width: 400px; margin-bottom: 36px; }
+
+    .feature-pills { display: flex; flex-direction: column; gap: 12px; position: relative; }
+    .feature-pill {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px; padding: 13px 18px; color: white; font-size: .9rem; font-weight: 500;
+    }
+    .feature-pill .pill-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+    /* Right panel – auth form */
+    .gate-form-panel {
+      width: 460px; background: var(--bg); display: flex; align-items: center;
+      justify-content: center; padding: 40px 48px;
+      box-shadow: -20px 0 60px rgba(0,0,0,.3);
+    }
+    .gate-form-inner { width: 100%; max-width: 360px; }
+
+    .gate-tabs {
+      display: flex; background: var(--border); border-radius: var(--radius); padding: 4px;
+      margin-bottom: 28px; gap: 2px;
+    }
+    .gate-tab {
+      flex: 1; padding: 10px; background: transparent; color: var(--muted);
+      border-radius: 7px; font-size: .9rem; font-weight: 600;
+      transition: var(--transition); cursor: pointer; border: none;
+    }
+    .gate-tab.active { background: var(--surface); color: var(--navy); box-shadow: var(--shadow-sm); }
+
+    .gate-form-title { margin-bottom: 24px; }
+    .gate-form-title h2 { font-family: 'Sora', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+    .gate-form-title p  { color: var(--muted); font-size: .88rem; margin-top: 4px; }
+
+    .demo-box {
+      background: var(--info-bg); border: 1px solid #bae6fd; border-radius: var(--radius);
+      padding: 12px 16px; margin-top: 18px; font-size: .8rem; color: var(--info);
+    }
+    .demo-box strong { display: block; margin-bottom: 4px; color: var(--navy); font-size: .82rem; }
+    .demo-row { display: flex; justify-content: space-between; margin-top: 3px; }
+    .demo-key { font-family: monospace; background: white; border-radius: 4px; padding: 1px 6px; }
+
+    .divider-text {
+      display: flex; align-items: center; gap: 12px; margin: 20px 0;
+      color: var(--muted); font-size: .82rem;
+    }
+    .divider-text::before, .divider-text::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Catalog preview overlay */
+    #catalog-preview { display: none; }
+    #catalog-preview.visible { display: block; }
+
+    .announcement-banner {
+      background: linear-gradient(90deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: white; padding: 12px 32px; font-size: .88rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    @media (max-width: 860px) {
+      .gate-layout { flex-direction: column; }
+      .gate-hero { padding: 40px 32px; }
+      .gate-hero h1 { font-size: 2rem; }
+      .gate-form-panel { width: 100%; padding: 32px 24px; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="gate-layout">
+
+  <!-- ── Left: Hero ──────────────────────────────────────── -->
+  <div class="gate-hero">
+    <div class="brand">
+      <img src="NU.png" alt="NU Logo">
+      <span>Smart<em>Lib</em></span>
+    </div>
+    <div class="hero-headline">
+      <h1>NU Cebu <em>Smart Learning for Smart Bulldogs.</em></h1>
+      <p>Search 38+ books, 10 research papers, and book study rooms — all powered by the NU Central Authentication System.</p>
+      <div class="feature-pills">
+        <div class="feature-pill"><span class="pill-icon">📚</span> Browse & place holds on physical books</div>
+        <div class="feature-pill"><span class="pill-icon">💻</span> Instant PDF access to research papers</div>
+        <div class="feature-pill"><span class="pill-icon">🏛️</span> Reserve smart study rooms online</div>
+        <div class="feature-pill"><span class="pill-icon">🔐</span> Secured by NU CAS authentication</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Auth form ────────────────────────────────── -->
+  <div class="gate-form-panel">
+    <div class="gate-form-inner">
+
+      <!-- Tabs -->
+      <div class="gate-tabs">
+        <button class="gate-tab active" id="tab-login-btn" onclick="switchGateTab('login')">Sign In</button>
+        <button class="gate-tab" id="tab-reg-btn" onclick="switchGateTab('register')">Register</button>
+      </div>
+
+      <!-- ── LOGIN ── -->
+      <div id="pane-login">
+        <div class="gate-form-title">
+          <h2>Welcome back 👋</h2>
+          <p>Sign in with your NU Student or Staff ID.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Student / Staff ID</label>
+          <input id="l-id" type="text" placeholder="e.g. 2026-0001" onkeydown="if(event.key==='Enter') handleLogin()">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="l-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') handleLogin()">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="handleLogin()" style="margin-top:4px;">
+          Authenticate via CAS →
+        </button>
+
+        <div class="demo-box">
+          <strong>🧪 Demo Credentials</strong>
+          <div class="demo-row"><span>Student</span><span class="demo-key">2026-0001 / pass</span></div>
+          <div class="demo-row"><span>Librarian</span><span class="demo-key">lib / lib</span></div>
+          <div class="demo-row"><span>Admin</span><span class="demo-key">admin / admin</span></div>
+        </div>
+
+        <div class="divider-text">or</div>
+        <button class="btn btn-ghost btn-block" onclick="switchGateTab('register')" style="font-size:.88rem;">
+          Create a new account →
+        </button>
+      </div>
+
+      <!-- ── REGISTER ── -->
+      <div id="pane-register" style="display:none;">
+        <div class="gate-form-title">
+          <h2>Create Account 🎉</h2>
+          <p>Register as a new student. Your account will be active immediately.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="r-name" type="text" placeholder="e.g. Juan Dela Cruz">
+        </div>
+        <div class="form-group">
+          <label>Student ID</label>
+          <input id="r-id" type="text" placeholder="e.g. 2026-0099">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="r-pw" type="password" placeholder="Create a password">
+        </div>
+        <button class="btn btn-success btn-block" onclick="handleRegister()" style="margin-top:4px;">
+          Create Account →
+        </button>
+
+        <div class="divider-text">already have an account?</div>
+        <button class="btn btn-ghost btn-block" onclick="switchGateTab('login')" style="font-size:.88rem;">
+          ← Back to Sign In
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Redirect if already logged in
+  const existing = getSession();
+  if (existing) window.location.href = existing.role + '.html';
+
+  // Show announcement if set
+  (function() {
+  const db = getDB();
+  const list = db.announcements || [];
+  if (!list.length) return;
+  const container = document.createElement('div');
+  list.forEach(a => {
+    const bar = document.createElement('div');
+    bar.className = 'announcement-banner';
+    bar.style.borderLeft = `4px solid ${a.priority === 'urgent' ? '#dc2626' : '#e8a820'}`;
+    bar.innerHTML = `<span>${a.priority === 'urgent' ? '🚨' : '📢'}</span><span>${a.text}</span><span style="margin-left:auto;opacity:.6;font-size:.78rem;">${a.author} · ${a.date}</span>`;
+    container.appendChild(bar);
+  });
+  document.body.insertBefore(container, document.body.firstChild);
+})();
+
+  function switchGateTab(tab) {
+    document.getElementById('tab-login-btn').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-reg-btn').classList.toggle('active', tab === 'register');
+    document.getElementById('pane-login').style.display    = tab === 'login'    ? 'block' : 'none';
+    document.getElementById('pane-register').style.display = tab === 'register' ? 'block' : 'none';
+  }
+
+  function handleLogin() {
+    const id = document.getElementById('l-id').value.trim();
+    const pw = document.getElementById('l-pw').value;
+    const db = getDB();
+    const user = db.users.find(u => u.id === id && u.pw === pw);
+    if (user) {
+      // Update lastLogin timestamp
+      user.lastLogin = new Date().toLocaleString();
+      saveDB(db);
+      setSession(user);
+      logAction(`Authenticated via CAS portal`, 'auth');
+      showToast(`Welcome back, ${user.name}!`, 'success');
+      setTimeout(() => window.location.href = user.role + '.html', 600);
+    } else {
+      showToast('Invalid ID or password. Check demo credentials below.', 'error');
+    }
+  }
+
+  function handleRegister() {
+    const name = document.getElementById('r-name').value.trim();
+    const id   = document.getElementById('r-id').value.trim();
+    const pw   = document.getElementById('r-pw').value;
+    if (!name || !id || !pw) return showToast('All fields are required.', 'warning');
+    if (pw.length < 4) return showToast('Password must be at least 4 characters.', 'warning');
+    if (registerUser(id, pw, name, 'student')) {
+      showToast('Account created! Signing you in…', 'success');
+      // Auto-login
+      const db   = getDB();
+      const user = db.users.find(u => u.id === id);
+      user.lastLogin = new Date().toLocaleString();
+      saveDB(db);
+      setSession(user);
+      setTimeout(() => window.location.href = 'student.html', 900);
+    } else {
+      showToast('That Student ID is already registered. Try signing in.', 'error');
+    }
+  }
+</script>
+</body>
+</html>
